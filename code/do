@@ -1,0 +1,3 @@
+gcc -c -maes -msse4 *.s
+gcc -maes -msse4 -W main.c ecb.o key_expansion.o aes.c -DLENGTH=32 -DTOTAL_LENGTH=272 -DNTHREADS=8 -o ecb
+rm *.o

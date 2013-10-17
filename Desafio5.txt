@@ -1,0 +1,53 @@
+O proximo desafio vai usar conceitos de criptografia de chave publica. Vai ser preciso utilizar uma biblioteca de grandes numeros, e sera necessario quebrar um esquema Diffie-Hellman multiplicativo de troca de chaves de sessao.
+
+FBODAGEIEHMJFLENADJKAMBKFDAKJKFC
+
+Chave: Key2Group09[`7/.
+
+-----------
+
+
+Documentação:
+
+O trabalho consiste em quebrar, através de força bruta, uma chave de 40 bits e
+revelar um texto inicialmente criptografado com o algoritmo AES.
+Nossa implementação alcançou um ótimo desempenho. Seguem alguns dados sobre o
+experimento:
+
+- Tempo médio para quebrar a chave: 10 segundos.
+- Número de threads: 8
+- Linguagem: C e Assembly
+- Plataforma:
+	- Processador: Intel Core i7 2.3GHz Quad-core Hyperthreading
+	- Memória: 8GB 1600MHz
+	- Sistema Operacional: Mac OS X 10.8.4
+	- Compilador: GCC 4.8.1
+	- Biblioteca AES: Intel AES-NI
+
+O desempenho alcançado se deve, principalmente, a 4 fatores:
+
+- AES-NI: Devido a grande popularidade e utilização do AES, a partir de 2010, a Intel começou a oferecer suporte a instruções específicas para AES em algumas de suas arquiteturas. Essas instruções permitem encriptação de decriptação rápida e segura de dados utilizando AES. A arquitetura consiste em 6 instruções assembly com suporte em hardware, sendo 4 para encriptação e decriptação e 2 para expansão de chave. Tais instruções tem flexibilidade para trabalhar com os tamanhos padrões de chave (128, 192 e 256 bits) assim como os diferentes modos de operação do AES (ECB, CBC e CTR) e oferecem um aumento considerável de desempenho.
+Para utilizar tais instruções e suporte em hardware para AES, estudamos o White Paper da Intel que apresenta essa arquitetura. Neste, obtivemos uma pequena biblioteca assembly que utiliza as instruções especiais e, com pequenas modificações, conseguimos fazê-la funcionar. Isso nos deu acesso a funções AES de alto desempenho e acreditamos que este seja o artifício que mais impactou no desempenho da nossa implementação.
+
+- Multithreading: Como o processo de força bruta é passível de ser executado paralelamente, dividimos as tentativas em 8 threads. Cada thread executa todas as variações possíveis para os 4 caracteres menos significativas da senha, mas apenas aproximadamente 1/8 das variações para o quinto, reduzindo consideravelmente o tempo de execução.
+Para permitir a execução do código com um número diferente de threads, criamos uma pequena lógica que faz essa divisão de trabalho entre elas. Utilizando 8 threads, a primeira e última thread ficam responsáveis por 14 caracteres cada, e as threads interemediárias ficam responsáveis por 11 caracteres cada. Essa divisão não ficou exatamente igualitária, mas foi suficiente para uma boa paralelização do nosso código.
+
+- Processamento parcial do texto de entrada: Para evitar processamento desnecessário, inicialmente são lidos apenas 32 bytes do texto cifrado. Esses 32 bytes são suficientes para que haja apenas um texto ascii legível (apenas uma chave). Assim que a chave é descoberta, portanto, lê-se o restante do texto e aplica-se a função de decriptação. Como a função de decriptação é executada bilhões de vezes, aplicar essa função em apenas 32 bytes oferece uma considerável vantagem.
+
+- Thread "bem posicionada": Com a divisão das possibilidades de chave entre as 8 threads, uma das threads coincidentemente começa suas tentativas já no primeiro caracter correto da chave, sendo este o caracter '[', de número 91 na tabela ASCII. Em cerca de 10 segundos rodando na plataforma citada, esta thread chega na chave correta e aborta o resto da execução do processo. Esse "bom posicionamento" obviamente torna o tempo de executação muito menor. Porém, se modificarmos o código para que a thread que descobrir a chave não aborte o processo, verificamos que as threads completam a varredura de todas as possibilidades de chave em cerca de 4 minutos. Portanto, em um cenário de pior caso em que a chave correta seria a última tentativa da última thread a terminar a execução, a chave seria quebrada em cerca de 4 minutos.
+
+Com a utilização da linguagem, biblioteca e plataformas corretas, o código ficou enxuto, legível e com um ótimo desempenho.
+
+
+-----------
+
+
+UFRGS ­ INF
+
+INF01045 ­ Segurança em Sistemas de Computação
+
+Tiago de Almeida | Bruna Seewald
+
+{talmeida | bruna.seewald}@inf.ufrgs.br
+
+Desafio 5
